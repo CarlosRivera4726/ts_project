@@ -108,103 +108,131 @@ public static GetUsers() {
 - Facilita el testing y el cambio de implementación de persistencia
 - Proporciona una interfaz limpia para operaciones CRUD
 
-### 5. Inheritance Pattern
-**Implementado en:** Clases `Admin` e `Inspector`
+### 5. **Patrón Composition (Composición)**
 
-Ambas clases heredan de la clase abstracta `User`, implementando el patrón de herencia clásico de la programación orientada a objetos.
-
-```typescript
-export class Admin extends User {
-  constructor(name: string, age: number, email: string) {
-    super(name, age, email); // Llamada al constructor padre
-    // Inicialización específica de Admin
-  }
-}
-
-export class Inspector extends User {
-  constructor(name: string, age: number, email: string) {
-    super(name, age, email); // Llamada al constructor padre
-  }
-}
-```
-
-**Beneficios:**
-- Reutilización de código común de la clase padre
-- Polimorfismo: ambas clases pueden ser tratadas como `User`
-- Extensibilidad: fácil agregar nuevos tipos de usuarios
-
-### 6. Encapsulation Pattern
-**Implementado en:** Todas las clases principales
-
-Cada clase encapsula sus propiedades y comportamientos, controlando el acceso a través de métodos públicos específicos.
+**Implementación**: La clase `Admin` compone funcionalidades de gestión de ubicaciones.
 
 ```typescript
-export class Location {
-  name: string;
-  coordinates: string;
-  status: Status; // Uso de enum para controlar estados válidos
-  
-  constructor(name: string, coordinates: string, status?: Status) {
-    this.name = name;
-    this.coordinates = coordinates;
-    this.status = status || Status.Active; // Valor por defecto
-  }
-}
-```
-
-**Beneficios:**
-- Control de acceso a los datos internos
-- Validación de estados mediante enums
-- Interfaz clara y controlada
-
-### 7. Strategy Pattern (Implícito)
-**Implementado en:** Diferenciación de comportamientos entre `Admin` e `Inspector`
-
-Aunque no es explícito, cada clase derivada implementa estrategias diferentes para manejar sus responsabilidades específicas.
-
-```typescript
-// Admin tiene métodos específicos para gestión
 export class Admin extends User {
   public createLocation(location: Location) {
     LocalDatabase.CreateLocation(location);
   }
-
+  
   public obtenerUbicaciones(): Location[] {
     return LocalDatabase.GetLocations();
   }
 }
-
-// Inspector tiene un comportamiento más simple
-export class Inspector extends User {
-  // Solo hereda comportamientos básicos de User
-}
 ```
 
-**Beneficios:**
-- Diferentes estrategias de comportamiento según el tipo de usuario
-- Flexibilidad para agregar nuevos comportamientos específicos
-- Separación clara de responsabilidades
+**Características**:
+- Combina diferentes responsabilidades en una sola clase
+- Permite reutilización de componentes
+- Facilita la extensión de funcionalidades
 
-### 8. Composition Pattern
-**Implementado en:** Relación entre clases
+**Beneficios**:
+- Flexibilidad en el diseño
+- Reutilización de código
+- Separación de responsabilidades
 
-Las clases utilizan composición para relacionarse entre sí, especialmente en el uso de enums y la integración con la base de datos.
+### 6. **Patrón Factory Method (Método de Fábrica)**
+
+**Implementación**: La clase `UserFactory` centraliza la creación de diferentes tipos de usuarios.
 
 ```typescript
-export class Location {
-  status: Status; // Composición con enum Status
+export class UserFactory {
+  public static createUser(type: UserType, name: string, age: number, email: string): User {
+    switch (type) {
+      case UserType.ADMIN:
+        return new Admin(name, age, email);
+      case UserType.INSPECTOR:
+        return new Inspector(name, age, email);
+      default:
+        throw new Error(`Tipo de usuario no soportado: ${type}`);
+    }
+  }
 }
-
-// En index.ts - Composición de objetos
-const admin = new Admin("Carlos", 25, "carlos@ejemplo.com");
-const location = new Location("Ubicación 1", "Descripción 1");
-admin.createLocation(location); // Composición de funcionalidades
 ```
 
-**Beneficios:**
-- Relaciones flexibles entre objetos
-- Reutilización de componentes (como enums)
-- Bajo acoplamiento entre clases
+**Ubicación**: `src/factories/UserFactory.class.ts`
+
+**Características**:
+- Encapsula la lógica de creación de objetos
+- Permite agregar nuevos tipos sin modificar código existente
+- Centraliza la creación de usuarios
+
+**Beneficios**:
+- Flexibilidad para agregar nuevos tipos
+- Código más mantenible
+- Separación de responsabilidades
+
+### 7. **Patrón Facade (Fachada)**
+
+**Implementación**: La clase `AdminFacade` simplifica operaciones complejas del sistema.
+
+```typescript
+export class AdminFacade {
+  public setupNewLocationWithInspector(
+    locationName: string,
+    coordinates: string,
+    inspectorName: string,
+    inspectorAge: number,
+    inspectorEmail: string
+  ): { location: Location; inspector: Inspector } {
+    // Operación compleja simplificada
+    const location = new Location(locationName, coordinates, Status.Active);
+    this.admin.createLocation(location);
+    const inspector = UserFactory.createInspector(inspectorName, inspectorAge, inspectorEmail);
+    return { location, inspector };
+  }
+}
+```
+
+**Ubicación**: `src/facades/AdminFacade.class.ts`
+
+**Características**:
+- Proporciona una interfaz simplificada
+- Oculta la complejidad del subsistema
+- Coordina múltiples operaciones
+
+**Beneficios**:
+- Facilita el uso del sistema
+- Reduce el acoplamiento
+- Mejora la usabilidad
+
+### 8. **Patrón State (Estado)**
+
+**Implementación**: La clase `Inspector` maneja diferentes estados de inspección.
+
+```typescript
+export class Inspector extends User {
+  private state: InspectionState;
+  
+  public startInspection(location: Location): string {
+    return this.state.startInspection(this, location);
+  }
+  
+  public finishInspection(): string {
+    return this.state.finishInspection(this);
+  }
+}
+```
+
+**Estados disponibles**:
+- `AvailableState`: Inspector disponible
+- `InProgressState`: Inspector realizando inspección
+- `CompletedState`: Inspector con inspección completada
+
+**Ubicación**: `src/states/` y `src/mainclasses/Inspector.class.ts`
+
+**Características**:
+- Comportamiento cambia según el estado interno
+- Transiciones controladas entre estados
+- Encapsula lógica específica de cada estado
+
+**Beneficios**:
+- Código más organizado y mantenible
+- Fácil agregar nuevos estados
+- Comportamiento predecible
 
 ## 🔧 Clases y Componentes
 
