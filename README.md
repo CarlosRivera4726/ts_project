@@ -108,6 +108,104 @@ public static GetUsers() {
 - Facilita el testing y el cambio de implementación de persistencia
 - Proporciona una interfaz limpia para operaciones CRUD
 
+### 5. Inheritance Pattern
+**Implementado en:** Clases `Admin` e `Inspector`
+
+Ambas clases heredan de la clase abstracta `User`, implementando el patrón de herencia clásico de la programación orientada a objetos.
+
+```typescript
+export class Admin extends User {
+  constructor(name: string, age: number, email: string) {
+    super(name, age, email); // Llamada al constructor padre
+    // Inicialización específica de Admin
+  }
+}
+
+export class Inspector extends User {
+  constructor(name: string, age: number, email: string) {
+    super(name, age, email); // Llamada al constructor padre
+  }
+}
+```
+
+**Beneficios:**
+- Reutilización de código común de la clase padre
+- Polimorfismo: ambas clases pueden ser tratadas como `User`
+- Extensibilidad: fácil agregar nuevos tipos de usuarios
+
+### 6. Encapsulation Pattern
+**Implementado en:** Todas las clases principales
+
+Cada clase encapsula sus propiedades y comportamientos, controlando el acceso a través de métodos públicos específicos.
+
+```typescript
+export class Location {
+  name: string;
+  coordinates: string;
+  status: Status; // Uso de enum para controlar estados válidos
+  
+  constructor(name: string, coordinates: string, status?: Status) {
+    this.name = name;
+    this.coordinates = coordinates;
+    this.status = status || Status.Active; // Valor por defecto
+  }
+}
+```
+
+**Beneficios:**
+- Control de acceso a los datos internos
+- Validación de estados mediante enums
+- Interfaz clara y controlada
+
+### 7. Strategy Pattern (Implícito)
+**Implementado en:** Diferenciación de comportamientos entre `Admin` e `Inspector`
+
+Aunque no es explícito, cada clase derivada implementa estrategias diferentes para manejar sus responsabilidades específicas.
+
+```typescript
+// Admin tiene métodos específicos para gestión
+export class Admin extends User {
+  public createLocation(location: Location) {
+    LocalDatabase.CreateLocation(location);
+  }
+
+  public obtenerUbicaciones(): Location[] {
+    return LocalDatabase.GetLocations();
+  }
+}
+
+// Inspector tiene un comportamiento más simple
+export class Inspector extends User {
+  // Solo hereda comportamientos básicos de User
+}
+```
+
+**Beneficios:**
+- Diferentes estrategias de comportamiento según el tipo de usuario
+- Flexibilidad para agregar nuevos comportamientos específicos
+- Separación clara de responsabilidades
+
+### 8. Composition Pattern
+**Implementado en:** Relación entre clases
+
+Las clases utilizan composición para relacionarse entre sí, especialmente en el uso de enums y la integración con la base de datos.
+
+```typescript
+export class Location {
+  status: Status; // Composición con enum Status
+}
+
+// En index.ts - Composición de objetos
+const admin = new Admin("Carlos", 25, "carlos@ejemplo.com");
+const location = new Location("Ubicación 1", "Descripción 1");
+admin.createLocation(location); // Composición de funcionalidades
+```
+
+**Beneficios:**
+- Relaciones flexibles entre objetos
+- Reutilización de componentes (como enums)
+- Bajo acoplamiento entre clases
+
 ## 🔧 Clases y Componentes
 
 ### Clase Abstracta: User
